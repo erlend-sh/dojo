@@ -63,13 +63,38 @@ mod Database {
 
     fn del(class_hash: starknet::ClassHash, table: felt252, query: Query) {
         Index::delete(table, query.into());
+        // TODO: emit delete event
     }
 
-    fn all(component: felt252, partition: felt252) -> Array::<felt252> {
-        if partition == 0 {
-            return Index::query(component);
+    fn all(
+        class_hash: starknet::ClassHash,
+        component: felt252,
+        partition: felt252
+    ) -> Array<(felt252, felt252)> {
+        let table = {
+            if partition == 0 {
+                component
+            } else {
+                pedersen(component, partition)
+            }
+        };
+        let ids = Index::query(table).span();
+
+        let count = ids.len();
+        let length = IComponentLibraryDispatcher { class_hash: class_hash }.len();
+        let mut pairs = ArrayTrait::<(felt252, felt252)>::new();
+        let mut i = 0;
+
+        loop {
+            if i == count {
+                break ();
+            }
+            let id = *(ids.pop_front());
+            let value = KeyValueStore::get(table, id, 0_u8, length);
+            pairs.append((id, value));
+            i += 1;
         }
 
-        Index::query(pedersen(component, partition))
+        pairs
     }
 }

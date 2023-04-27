@@ -127,7 +127,8 @@ mod World {
     // Returns entities that contain the component state.
     #[view]
     fn entities(component: felt252, partition: felt252) -> Array::<felt252> {
-        Database::all(component, partition)
+        let class_hash = component_registry::read(component);
+        Database::all(class_hash, component, partition)
     }
 
     #[external]
