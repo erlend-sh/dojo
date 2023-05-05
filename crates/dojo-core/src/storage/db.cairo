@@ -49,7 +49,7 @@ mod Database {
         value: Span<felt252>
     ) {
         let keys = query.keys();
-        let id = query.into();
+        let id = query.id();
 
         let length = IComponentLibraryDispatcher { class_hash: class_hash }.len();
         assert(value.len() <= length, 'Value too long');
@@ -66,11 +66,13 @@ mod Database {
         // TODO: emit delete event
     }
 
+    // returns a tuple of arrays, first contains the entity IDs
+    // second the deserialized entities themselves
     fn all(
         class_hash: starknet::ClassHash,
         component: felt252,
         partition: felt252
-    ) -> Array<(felt252, felt252)> {
+    ) -> (Span<felt252>, Span<Span<felt252>>) {
         let table = {
             if partition == 0 {
                 component
@@ -78,23 +80,21 @@ mod Database {
                 pedersen(component, partition)
             }
         };
-        let ids = Index::query(table).span();
-
-        let count = ids.len();
+        let all_ids = Index::query(table);
         let length = IComponentLibraryDispatcher { class_hash: class_hash }.len();
-        let mut pairs = ArrayTrait::<(felt252, felt252)>::new();
-        let mut i = 0;
 
+        let mut ids = all_ids.span();
+        let mut entities: Array<Span<felt252>> = ArrayTrait::new();
         loop {
-            if i == count {
-                break ();
-            }
-            let id = *(ids.pop_front());
-            let value = KeyValueStore::get(table, id, 0_u8, length);
-            pairs.append((id, value));
-            i += 1;
+            match ids.pop_front() {
+                Option::Some(id) => {
+                    let value: Span<felt252> = KeyValueStore::get(table, *id, 0_u8, length);
+                    entities.append(value);
+                },
+                Option::None(_) => {
+                    break (all_ids.span(), entities.span());
+                }
+            };
         }
-
-        pairs
     }
 }

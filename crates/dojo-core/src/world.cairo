@@ -91,9 +91,9 @@ mod World {
     // Issue an autoincremented id to the caller.
     #[external]
     fn uuid() -> felt252 {
-        let next = nonce::read();
-        nonce::write(next + 1);
-        return pedersen(next, 0);
+        let current = nonce::read();
+        nonce::write(current + 1);
+        return pedersen(current, 0);
     }
 
     #[external]
@@ -124,9 +124,9 @@ mod World {
         }
     }
 
-    // Returns entities that contain the component state.
+    // Returns entity IDs and entities that contain the component state
     #[view]
-    fn entities(component: felt252, partition: felt252) -> Array::<felt252> {
+    fn entities(component: felt252, partition: felt252) -> (Span<felt252>, Span<Span<felt252>>) {
         let class_hash = component_registry::read(component);
         Database::all(class_hash, component, partition)
     }

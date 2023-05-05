@@ -1,5 +1,3 @@
-use array::ArrayTrait;
-
 #[contract]
 mod Index {
     use array::ArrayTrait;
@@ -8,7 +6,7 @@ mod Index {
     use option::OptionTrait;
 
     struct Storage {
-        // Maps id to it's position in the table.
+        // Maps id to its position in the table.
         // NOTE: ids is 1-indexed to allow for 0
         // to be used as a sentinel value.
         ids: LegacyMap::<(felt252, felt252), usize>,
