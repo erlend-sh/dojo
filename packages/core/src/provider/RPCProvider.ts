@@ -1,11 +1,12 @@
-import { RpcProvider } from "starknet";
+import { RpcProvider, SequencerProvider } from "starknet";
 import { Call } from "starknet";
 import { Provider } from "./provider";
 import { Query, WorldEntryPoints } from "../types";
 
 
 export class RPCProvider extends Provider {
-    private provider: RpcProvider;
+    public provider: RpcProvider;
+    public sequencerProvider: SequencerProvider;
     private loggingEnabled: boolean;
 
     constructor(world_address: string, url: string, loggingEnabled = false) {
@@ -13,6 +14,11 @@ export class RPCProvider extends Provider {
         this.provider = new RpcProvider({
             nodeUrl: url,
         });
+        this.sequencerProvider = new SequencerProvider({
+            baseUrl: url,
+            feederGatewayUrl: 'feeder_gateway',
+            gatewayUrl: 'gateway',
+        })
         this.loggingEnabled = loggingEnabled;
     }
 
