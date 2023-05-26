@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+eyre = "0.6.8"
 beerus-core = { git = "https://github.com/keep-starknet-strange/beerus", rev = "fbb39bd72fb283f653db4a5d279443e2f122153d" }
 bevy = { version = "0.10", default-features = false }
 
@@ -20,6 +21,11 @@ tonic = { version = "0.8" }
 [dev-dependencies]
 chrono = "0.4"
 bevy = "0.10"
+
+[features]
+default = ["full"]
+full = ["light-client"]
+light-client = []
 
 [[example]]
 name = "indexer"
